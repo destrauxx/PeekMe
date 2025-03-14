@@ -10,7 +10,6 @@ from config import TG_TOKEN
 from states import UserRegister
 
 
-
 async def start(message: Message) -> None:
     await message.answer("Привет! Добро пожаловать в PickMe BOT")
 
@@ -32,6 +31,7 @@ async def set_smth_to_profile2(
 
 async def main() -> None:
     databaseHandler = DatabaseHandler()
+
     dp = Dispatcher()
 
     dp.message.register(
