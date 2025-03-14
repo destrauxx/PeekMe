@@ -16,6 +16,7 @@ class Handler:
 
     async def start(self, message: Message) -> None:
         await message.answer("Привет! Добро пожаловать в PickMe BOT")
+        await message.answer("Пожалуйста, пройди процесс регистрации по команде /register")
 
     async def login(self, message: Message) -> None: ...
 
@@ -62,7 +63,7 @@ class Handler:
         await state.update_data(rating=message.text)
         await state.set_state(UserRegister.image_url)
 
-        await message.answer("Добавть ссылку на картинку")
+        await message.answer("Отправь ссылку на картинку")
 
     async def set_image_url_to_profile(
         self, message: Message, state: FSMContext
@@ -75,7 +76,7 @@ class Handler:
         user_dto = UserRegisterDTO(**data)
         self.databaseHandler.add_user(user_dto)
         await state.clear()
-        await message.answer("Успшно зарегистрированы!")
+        await message.answer("Успешно зарегистрированы!")
 
 
 async def main() -> None:
