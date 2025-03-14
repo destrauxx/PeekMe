@@ -1,27 +1,28 @@
 import sqlite3
 
-
-class DatabaseHandler:
-    database: sqlite3.Connection
-    cursor: sqlite3.Cursor
-
+class DatabaseHandler():
+    database = None
+    cursor = None
+    
     def __init__(self):
         self.database = sqlite3.connect("database.db")
         self.cursor = self.database.cursor()
-        self.cursor.execute("""CREATE TABLE IF NOT EXISTS Users (
+        self.cursor.execute('''CREATE TABLE IF NOT EXISTS Users (
             id INTEGER PRIMARY KEY,
             username TEXT NOT NULL,
-            email TEXT NOT NULL,
-            age INTEGER
-        )""")
-        self.database.commit()
-
-    def add_user(self, username: str, email: str, age: str) -> None:
-        self.cursor.execute(
-            "INSERT INTO Users (username, email, age) VALUES (?, ?, ?)",
-            (username, email, age),
+            age INTEGER,
+            interests TEXT,
+            
         )
+                            ''')    
         self.database.commit()
-
+        
+    def add_user(self, username, age, interests):
+        self.cursor.execute('INSERT INTO Users (username, age, interests) VALUES (?, ?)', (username, age, interests))
+        self.database.commit()
+        
     def __del__(self):
         self.database.close()
+        
+    
+    
