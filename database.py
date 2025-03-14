@@ -5,7 +5,7 @@ class DatabaseHandler():
     cursor = None
     
     def __init__(self):
-        self.database = sqlite3.connect("database.py")
+        self.database = sqlite3.connect("database.db")
         self.cursor = self.database.cursor()
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS Users (
             id INTEGER PRIMARY KEY,

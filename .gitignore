@@ -4,3 +4,4 @@ env
 .vscode
 .mypy_cache
 database.db
+__pycache__
