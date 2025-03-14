@@ -10,15 +10,18 @@ class DatabaseHandler():
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS Users (
             id INTEGER PRIMARY KEY,
             username TEXT NOT NULL,
+            description TEXT,
             age INTEGER,
             interests TEXT,
-            
+            rating INTEGER NOT NULL,
+            type TEXT,
+            image_url TEXT
         )
                             ''')    
         self.database.commit()
         
-    def add_user(self, username, age, interests):
-        self.cursor.execute('INSERT INTO Users (username, age, interests) VALUES (?, ?)', (username, age, interests))
+    def add_user(self, username, description, age, interests, rating, type, image_url):
+        self.cursor.execute('INSERT INTO Users (username, description, age, interests, rating, type, image_url) VALUES (?, ?, ?, ?, ?, ?, ?)', (username, description, age, interests, rating, type, image_url))
         self.database.commit()
         
     def __del__(self):
