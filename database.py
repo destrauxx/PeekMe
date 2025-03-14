@@ -18,7 +18,8 @@ class DatabaseHandler:
             interests TEXT,
             rating INTEGER NOT NULL,
             type TEXT,
-            image_url TEXT
+            image_url TEXT,
+            tags TEXT
         )
                             """)
         self.database.commit()
@@ -28,8 +29,8 @@ class DatabaseHandler:
             (
                 "INSERT INTO Users "
                 "(username, description, age, "
-                "interests, rating, type, image_url) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?)"
+                "interests, rating, type, image_url, tags) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
             ),
             (
                 user.username,
@@ -39,16 +40,35 @@ class DatabaseHandler:
                 user.rating,
                 user.type,
                 user.image_url,
+                "",
             ),
         )
         self.database.commit()
 
-    def find_users_by_username(self, username: str):
+    def add_tags_to_user(self, username: str, tags: list[str]):
+        self.cursor.execute(
+            """UPDATE Users
+                            SET tags = ?
+                            WHERE username = ?
+                            """,
+            (
+                ", ".join(tags),
+                username,
+            ),
+        )
+        self.database.commit()
+
+    def find_users_by_username(self, username: str) -> UserRegisterDTO | None:
         self.cursor.execute(
             "SELECT * FROM Users WHERE username = ?",
-            (username),
+            (username,),
         )
-        return self.cursor.fetchall()
+        data = self.cursor.fetchall()
+        if len(data) == 0:
+            return None
+        user_data = data[0]
+        user_response = UserRegisterDTO(*user_data[1:])
+        return user_response
 
     def find_users_by_type(self, type: str):
         self.cursor.execute("SELECT * FROM Users WHERE type = ?", (type))
