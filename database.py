@@ -13,11 +13,10 @@ class DatabaseHandler:
             username TEXT NOT NULL,
             email TEXT NOT NULL,
             age INTEGER
-        )
-                            """)
+        )""")
         self.database.commit()
 
-    def add_user(self, username, email, age):
+    def add_user(self, username: str, email: str, age: str) -> None:
         self.cursor.execute(
             "INSERT INTO Users (username, email, age) VALUES (?, ?, ?)",
             (username, email, age),

@@ -10,50 +10,53 @@ from config import TG_TOKEN
 from states import UserRegister
 
 
-async def start(message: Message) -> None:
-    await message.answer("Привет! Добро пожаловать в PickMe BOT")
+class Handler:
+    databaseHandler = DatabaseHandler()
 
+    async def start(self, message: Message) -> None:
+        await message.answer("Привет! Добро пожаловать в PickMe BOT")
 
-async def login(message: Message) -> None: ...
+    async def login(self, message: Message) -> None: ...
 
+    async def register(self, message: Message, state: FSMContext) -> None:
+        await state.set_state(UserRegister.username)
+        await message.answer("Введите желаемый username")
 
-async def register(message: Message, state: FSMContext) -> None: ...
+    async def set_username_to_profile(
+        self, message: Message, state: FSMContext
+    ) -> None: ...
 
-
-async def set_smth_to_profile(message: Message, state: FSMContext) -> None: ...
-
-
-async def set_smth_to_profile2(
-    message: Message,
-    state: FSMContext,
-) -> None: ...
+    async def set_email_to_profile(
+        self, message: Message, state: FSMContext
+    ) -> None: ...
 
 
 async def main() -> None:
-    databaseHandler = DatabaseHandler()
-
     dp = Dispatcher()
-
+    handler = Handler()
     dp.message.register(
-        start,
+        handler.start,
         Command("start"),
     )
 
     dp.message.register(
-        login,
+        handler.login,
         Command("login"),
     )
 
-    dp.message.register(register, Command("register"))
-
     dp.message.register(
-        set_smth_to_profile,
-        UserRegister.name,
+        handler.register,
+        Command("register"),
     )
 
     dp.message.register(
-        set_smth_to_profile,
-        UserRegister.name,
+        handler.set_username_to_profile,
+        UserRegister.username,
+    )
+
+    dp.message.register(
+        handler.set_email_to_profile,
+        UserRegister.email,
     )
 
     bot = Bot(TG_TOKEN)
