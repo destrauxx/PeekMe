@@ -4,8 +4,9 @@ from aiogram import Bot, Dispatcher
 from aiogram.filters import Command
 from aiogram.types import Message
 
-
+from database import DatabaseHandler
 from config import TG_TOKEN
+
 
 
 async def start(message: Message) -> None:
@@ -13,6 +14,7 @@ async def start(message: Message) -> None:
 
 
 async def main() -> None:
+    databaseHandler = DatabaseHandler()
     dp = Dispatcher()
 
     dp.message.register(
