@@ -111,3 +111,10 @@ class BackendApi:
             headers={"Content-Type": "application/json"},
         )
         return resp
+
+    def search_with_tags(self, tags):
+        resp = requests.get(
+            f"{self.base_url}/users?tags={tags}",
+            headers={"Content-Type": "application/json"},
+        )
+        return resp

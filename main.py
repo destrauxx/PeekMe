@@ -49,6 +49,7 @@ async def login_username(message: aiogram.types.Message, state: FSMContext) -> N
         case 200:
             userdata = UserRegisterDTO(**resp.json())
             await message.answer(str(userdata))
+            await state.clear()
         case 404:
             await message.answer("Такой пользователь не найден")
 
@@ -196,6 +197,13 @@ async def test_passed(message: aiogram.types.Message, state: FSMContext) -> None
     # self.databaseHandler.add_tags_to_user(, response)
     await message.answer(f"Выши тэги: {', '.join(response)}")
     await state.clear()
+
+
+@dp.message(Command("search_tags"))
+async def search(message: aiogram.types.Message, state: FSMContext) -> None:
+    tags = message.text.removeprefix("/serach_tags ")
+    resp = bapi.search_with_tags(tags)
+    await message.answer(str(resp.json()))
 
 
 async def main() -> None:
