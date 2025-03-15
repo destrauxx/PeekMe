@@ -6,8 +6,9 @@ from aiogram.filters import Command
 import aiogram.types
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from dto import UserRegisterDTO
+from dto import UserRegisterDTO, UserSetTagsDTO, UserDTO
 from api import YandexGPTAPI, BackendApi
+from callbacks import UserList, UserGenerateResponse
 
 from config import TG_TOKEN, YA_FOLDER_ID, YA_GPT_API, BACKEND_API
 from states import UserRegister, UserLogin
@@ -189,21 +190,59 @@ async def test_passed(message: aiogram.types.Message, state: FSMContext) -> None
 
     response = ya_gpt.get_tags(s)["tags"]
 
-    req = {"username": message.from_user.username, "tags": ", ".join(response)}
-    resp = bapi.add_tags(req)
+    req = UserSetTagsDTO(username=message.from_user.username, tags=", ".join(response))
+    resp = bapi.add_tags(req.to_dict())
     if resp.status_code != 204:
         await message.answer("Ошибка на в сервере, попробйте ещё раз")
         return
-    # self.databaseHandler.add_tags_to_user(, response)
-    await message.answer(f"Выши тэги: {', '.join(response)}")
+    await message.answer(f"Ваши тэги: {', '.join(response)}")
     await state.clear()
 
 
 @dp.message(Command("search_tags"))
 async def search(message: aiogram.types.Message, state: FSMContext) -> None:
-    tags = message.text.removeprefix("/serach_tags ")
+    tags: str = message.text
+
+    tags = tags.replace("/search_tags ", "", 1)
     resp = bapi.search_with_tags(tags)
-    await message.answer(str(resp.json()))
+    for u in resp.json():
+        user = UserDTO(**u)
+        builder = InlineKeyboardBuilder()
+        builder.button(
+            text="Посмтотреть профиль",
+            callback_data=UserList(username=user.username),
+        )
+        await message.answer(str(user), reply_markup=builder.as_markup())
+    # await message.answer(str(resp.json()))
+
+
+@dp.callback_query(UserList.filter())
+async def users_list_view(
+    callback: aiogram.types.CallbackQuery,
+    callback_data: UserList,
+) -> None:
+    builder = InlineKeyboardBuilder()
+    username = callback_data.username
+    user = bapi.get_user(username).json()
+    user = UserDTO(**user)
+    text = user.full_profile()
+    builder.button(
+        text="Сгенерировать текст для начала общения",
+        callback_data=UserGenerateResponse(userdata=user.username),
+    )
+    await callback.message.edit_text(text, reply_markup=builder.as_markup())
+
+
+@dp.callback_query(UserGenerateResponse.filter())
+async def genereate_response_ai(
+    callback: aiogram.types.CallbackQuery,
+    callback_data: UserGenerateResponse,
+) -> None:
+    username = callback_data.userdata
+    user_data = bapi.get_user(username).json()
+    user = UserDTO(**user_data)
+    resp = ya_gpt.generate_user_text(user.full_profile, username)
+    await callback.message.answer(str(resp))
 
 
 async def main() -> None:

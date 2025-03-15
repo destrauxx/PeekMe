@@ -58,6 +58,13 @@ class YandexGPTAPI:
             "'question' (текст вопроса), 'options' (массив из 4 вариантов ответа), 'correct_answer' (правильный ответ)."
         )
 
+    def generate_text_prompt(self, user_data: str) -> str:
+        return (
+            "Напиши текст для начала общения с учеником старших классов школы. Данные"
+            f"ученика следующие: {user_data}. В этих данных указано имя ученика, его увлечения и персональные тэги (его характеристик). Учитывай эти поля. В ответе пиши не более 30 слов."
+            "Формат ответа должен представлять собой строку текста. Пиши развернуто "
+        )
+
     def generate_tags_prompt(self):
         return "На основе данных тебе вопросов и ответов на них, составь тэги человека с его классификацией. Формат ответа должен быть ввиде JSON. В ответе должны быть поле `tags` представляющий список тегов.\n"
 
@@ -77,6 +84,14 @@ class YandexGPTAPI:
             response["result"]["alternatives"][0]["message"]["text"].strip("`")
         )
 
+        return data
+
+    def generate_user_text(self, text, username):
+        prompt = self.generate_text_prompt(text)
+        response = self.send_request(prompt)
+
+        data = response["result"]["alternatives"][0]["message"]["text"]
+        data = data.replace("[имя]", username, 1)
         return data
 
 
@@ -115,6 +130,13 @@ class BackendApi:
     def search_with_tags(self, tags):
         resp = requests.get(
             f"{self.base_url}/users?tags={tags}",
+            headers={"Content-Type": "application/json"},
+        )
+        return resp
+
+    def get_user(self, username: str):
+        resp = requests.get(
+            f"{self.base_url}/users/{username}",
             headers={"Content-Type": "application/json"},
         )
         return resp
