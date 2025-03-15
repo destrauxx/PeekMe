@@ -16,8 +16,8 @@ class UserRegisterDTO:
         type: str,
         interests: str,
         rating: int,
-        image_url: str,
-        tags: str,
+        image_url: str = "",
+        tags: str = "",
     ) -> None:
         self.username = username
         self.age = age

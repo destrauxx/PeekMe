@@ -78,3 +78,36 @@ class YandexGPTAPI:
         )
 
         return data
+
+
+class BackendApi:
+    base_url: str
+
+    def __init__(
+        self,
+        base_url: str,
+    ):
+        self.base_url = base_url
+
+    def login_user(self, username):
+        resp = requests.get(
+            f"{self.base_url}/users/{username}",
+            headers={"Content-Type": "application/json"},
+        )
+        return resp
+
+    def register(self, userdata):
+        resp = requests.post(
+            f"{self.base_url}/users",
+            json=userdata,
+            headers={"Content-Type": "application/json"},
+        )
+        return resp
+
+    def add_tags(self, userdata):
+        resp = requests.patch(
+            f"{self.base_url}/users",
+            json=userdata,
+            headers={"Content-Type": "application/json"},
+        )
+        return resp

@@ -1,6 +1,10 @@
 from aiogram.fsm.state import State, StatesGroup
 
 
+class UserLogin(StatesGroup):
+    username = State()
+
+
 class UserRegister(StatesGroup):
     username = State()
     age = State()
