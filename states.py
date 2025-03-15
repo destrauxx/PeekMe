@@ -17,14 +17,5 @@ class UserRegister(StatesGroup):
     test_passed = State()
 
 
-# class Test(StatesGroup):
-#     case1 = State()
-#     case2 = State()
-#     case3 = State()
-#     case4 = State()
-#     case5 = State()
-#     case6 = State()
-#     case7 = State()
-#     case8 = State()
-#     case9 = State()
-#     case10 = State()
+class Search(StatesGroup):
+    search_tags = State()

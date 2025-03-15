@@ -1,17 +1,18 @@
 import asyncio
+from tkinter import SE
 import validators
 
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command
 import aiogram.types
 from aiogram.fsm.context import FSMContext
-from aiogram.utils.keyboard import InlineKeyboardBuilder
+from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
 from dto import UserRegisterDTO, UserSetTagsDTO, UserDTO
 from api import YandexGPTAPI, BackendApi
 from callbacks import UserList, UserGenerateResponse
 
 from config import TG_TOKEN, YA_FOLDER_ID, YA_GPT_API, BACKEND_API
-from states import UserRegister, UserLogin
+from states import UserRegister, UserLogin, Search
 
 
 dp = Dispatcher()
@@ -48,8 +49,10 @@ async def login_username(message: aiogram.types.Message, state: FSMContext) -> N
     resp = bapi.login_user(username)
     match resp.status_code:
         case 200:
+            builder = ReplyKeyboardBuilder()
+            builder.add(aiogram.types.KeyboardButton(text="/search_tags"))
             userdata = UserRegisterDTO(**resp.json())
-            await message.answer(str(userdata))
+            await message.answer(str(userdata), reply_markup=builder.as_markup())
             await state.clear()
         case 404:
             await message.answer("Такой пользователь не найден")
@@ -164,8 +167,8 @@ async def register_img_url(message: aiogram.types.Message, state: FSMContext) ->
 async def test(callback: aiogram.types.CallbackQuery, state: FSMContext) -> None:
     text = ""
     for k, v in enumerate(tests):
-        text += f"1) {v['question']}"
-        text += f"\nОтветы: {k + 1}. {v['options'][0]}\t2. {v['options'][0]}\n3. {v['options'][0]}\t4. {v['options'][0]}\n"
+        text += f"{k + 1}) {v['question']}"
+        text += f"\nОтветы: 1. {v['options'][0]}\t2. {v['options'][1]}\n3. {v['options'][2]}\t4. {v['options'][3]}\n"
     text += "Отправьте ответы в формате: `номер вопроса`) `номер ответа`.\nОтправьте ответы все в одном сообщении (точка на каждой строчке обязательна)"
     await state.set_state(UserRegister.test_passed)
     await callback.message.answer(text)
@@ -201,9 +204,17 @@ async def test_passed(message: aiogram.types.Message, state: FSMContext) -> None
 
 @dp.message(Command("search_tags"))
 async def search(message: aiogram.types.Message, state: FSMContext) -> None:
+    await state.set_state(Search.search_tags)
+    await message.answer(
+        "Это команда для поиска людей по их тегам.\n Напишите желаемые теги в формате <Тег1>,<Тег2> (рядом с запятой не нужно пробелов)"
+    )
+
+
+@dp.message(Search.search_tags)
+async def search_tags(message: aiogram.types.Message, state: FSMContext) -> None:
+    await state.clear()
     tags: str = message.text
 
-    tags = tags.replace("/search_tags ", "", 1)
     resp = bapi.search_with_tags(tags)
     for u in resp.json():
         user = UserDTO(**u)
